@@ -8,7 +8,7 @@ export class User {
     minlength: [3, 'Name must be at least 3 characters long'], // Fixed: min -> minlength
     maxlength: [50, 'Name must be at most 50 characters long'], // Fixed: max -> maxlength
   })
-  name: string;
+  name: string = '';
 
   @Prop({
     required: true,
