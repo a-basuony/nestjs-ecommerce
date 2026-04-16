@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './user.schema';
+import { User } from './schema/user.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 
@@ -10,9 +10,6 @@ export class UserService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
   ) {}
-  // create(createUserDto: CreateUserDto) {
-  //   return this.userModule.create(createUserDto);
-  // }
 
   async create(createUserDto: CreateUserDto) {
     const existingUser = await this.userModel.findOne({
@@ -26,8 +23,8 @@ export class UserService {
     return this.userModel.create(createUserDto);
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async findAll() {
+    return this.userModel.find();
   }
 
   findOne(id: number) {
