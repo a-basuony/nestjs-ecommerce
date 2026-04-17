@@ -14,9 +14,12 @@ export class UserController {
   @UseGuards(AuthGuard)
   @Roles(Role.Admin) // ✅ FIX: Use the Enum instead of the string 'admin'
   @Post()
-  create(@Body() createUserDto: CreateUserDto, @Req() req: express.Request) {
-    console.log('Decoded User Payload:', req['user']);
-    return this.userService.create(createUserDto);
+  create(
+    @Body() createUserDto: CreateUserDto,
+    @Req() payload: express.Request,
+  ) {
+    console.log('Decoded User Payload:', payload['user']);
+    return this.userService.create(createUserDto, payload['user']);
   }
 
   @Get()

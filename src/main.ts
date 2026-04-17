@@ -12,6 +12,8 @@ async function bootstrap() {
       transform: true, // Convert types automatically
     }),
   );
+  app.setGlobalPrefix('api/v1'); // 👉 يخلي كل routes تبدأ بـ /api
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
