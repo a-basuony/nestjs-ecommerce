@@ -1,6 +1,13 @@
-import { Controller, Get, Post, Body, UseGuards, Req, Param } from '@nestjs/common';
-// import { Request } from 'express';
-import * as express from 'express'; // Fixed Import
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Param,
+  Delete,
+  Put,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 // Import the Role Enum from your decorator file
@@ -8,8 +15,8 @@ import { Roles, Role } from '../common/decorators/roles.decorators';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
 
-@Controller('user')
-@UseGuards(AuthGuard)
+@Controller('users')
+// @UseGuards(AuthGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -18,7 +25,7 @@ export class UserController {
   // @access Private (Admin only)
   // @param {CreateUserDto} createUserDto - The data transfer object for creating a user
   // @returns {Promise<{ status: number; message: string; user: any }>} The created user data
-  @Roles(Role.Admin) // ✅ FIX: Use the Enum instead of the string 'admin'
+  // @Roles(Role.Admin) // ✅ FIX: Use the Enum instead of the string 'admin'
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
@@ -28,7 +35,7 @@ export class UserController {
   // @route GET /api/v1/users
   // @access Private (Admin only)
   @Get()
-  @Roles(Role.Admin)
+  // @Roles(Role.Admin)
   findAll() {
     return this.userService.findAll();
   }
@@ -37,18 +44,18 @@ export class UserController {
   // @route GET /api/v1/users/:id
   // @access Private (Admin only)
   @Get(':id')
-  @Roles(Role.Admin)
+  // @Roles(Role.Admin)
   // findOne(@Req() req: express.Request) {
   // const { id } = req.params;
-  findOne( @Param('id') id: string) {
+  findOne(@Param('id') id: string) {
     return this.userService.findOne(id);
   }
 
   // @desc Update a user by ID
   // @route PUT /api/v1/users/:id
   // @access Private (Admin only)
-  @Post(':id')
-  @Roles(Role.Admin)
+  @Put(':id')
+  // @Roles(Role.Admin)
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(id, updateUserDto);
   }
@@ -56,8 +63,8 @@ export class UserController {
   // @desc Delete a user by ID
   // @route DELETE /api/v1/users/:id
   // @access Private (Admin only)
-  @Post(':id')
-  @Roles(Role.Admin)
+  @Delete(':id')
+  // @Roles(Role.Admin)
   remove(@Param('id') id: string) {
     return this.userService.remove(id);
   }

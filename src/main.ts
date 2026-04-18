@@ -12,7 +12,7 @@ async function bootstrap() {
       transform: true, // Convert types automatically
     }),
   );
-  app.setGlobalPrefix('api/v1'); // 👉 يخلي كل routes تبدأ بـ /api
+  app.setGlobalPrefix('api/v1'); // Set a global prefix for all routes
 
   await app.listen(process.env.PORT ?? 3000);
 }
