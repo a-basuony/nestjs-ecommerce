@@ -1,3 +1,14 @@
+import {
+  IsBooleanString,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
+import { Role } from './create-user.dto';
+
 export class GetUsersDto {
   @IsOptional()
   @IsInt()
