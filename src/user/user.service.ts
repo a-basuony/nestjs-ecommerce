@@ -17,6 +17,13 @@ export interface IServiceResponse<T> {
   status: number;
   message: string;
   data?: T;
+  meta?: {
+    totalItems: number;
+    itemCount: number;
+    itemsPerPage: number;
+    totalPages: number;
+    currentPage: number;
+  };
 }
 
 @Injectable()
@@ -74,16 +81,100 @@ export class UserService {
   // @access Private (Admin only)
   // @returns {Promise<User[]>} An array of all users
   // need pagination and filtering by role and isActive
-  async findAll(): Promise<IServiceResponse<User[]>> {
-    const users = await this.userModel
-      .find()
-      .select('-password -verificationCode -__v')
-      .lean();
+  async findAll(query: any): Promise<IServiceResponse<User[]>> {
+    // 1. extract pagination and filtering parameters from query
+    const page = Math.max(Number(query.page) || 1, 1); // to prevent numbers less that 1
+    let limit = Math.max(Number(query.limit) || 10, 1);
+    limit = Math.min(limit, 100);
+    const skip = (page - 1) * limit;
+
+    // 2. searching by name or email
+    const safeSearch = query.search
+      ? query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      : '';
+    const searchFilter = safeSearch
+      ? {
+          $or: [
+            { name: { $regex: safeSearch, $options: 'i' } },
+            { email: { $regex: safeSearch, $options: 'i' } },
+          ],
+        }
+      : {};
+
+    // 3. filter by role & isActive
+    const allowedFilters = ['role', 'isActive', 'gender'];
+    const filter: any = { ...searchFilter };
+
+    allowedFilters.forEach((key) => {
+      if (query[key] !== undefined) {
+        filter[key] = query[key];
+      }
+    });
+
+    if (query.role) filter['role'] = query.role;
+    if (query.isActive) filter['isActive'] = query.isActive === 'true';
+
+    // 4. Sort by creation date (newest first) and apply pagination
+    // ?sort=-createdAt descending order or ?sort=createdAt for ascending order
+
+    let sort = { createdAt: -1 } as any; // default sorting
+    if (query.sort) {
+      const sortField = query.sort.startsWith('-')
+        ? query.sort.substring(1)
+        : query.sort;
+      const sortOrder = query.sort.startsWith('-') ? -1 : 1;
+      sort = { [sortField]: sortOrder };
+    }
+
+    console.log({ query, filter, sort });
+    // 5. execute query with filters, sorting, and pagination
+
+    const [users, totalItems] = await Promise.all([
+      this.userModel
+        .find(filter)
+        .select('-password -verificationCode -__v')
+        .sort(sort)
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      this.userModel.countDocuments(filter),
+    ]);
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    // if (users.length === 0) {
+    //   throw new NotFoundException('No users found');
+    // }
+
+    // instead of throwing
+    if (users.length === 0) {
+      return {
+        status: 200,
+        message: 'No users found',
+        data: [],
+        meta: {
+          totalItems: 0,
+          itemCount: 0,
+          itemsPerPage: limit,
+          totalPages: 0,
+          currentPage: page,
+        },
+      };
+    }
+
+    // 6. return response with pagination metadata
 
     return {
       status: 200,
       message: 'Users retrieved successfully',
       data: users,
+      meta: {
+        totalItems,
+        itemCount: users.length,
+        itemsPerPage: limit,
+        totalPages,
+        currentPage: page,
+      },
     };
   }
 

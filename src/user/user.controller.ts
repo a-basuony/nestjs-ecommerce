@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Put,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -36,8 +37,8 @@ export class UserController {
   // @access Private (Admin only)
   @Get()
   // @Roles(Role.Admin)
-  findAll() {
-    return this.userService.findAll();
+  findAll(@Query() query: any) {
+    return this.userService.findAll(query);
   }
 
   // @desc Get a user by ID
